@@ -10,8 +10,8 @@ class LastFM:
         self.keys = {'public' : public_key, 'secret' : secret_key}
         self.session = session
 
-    def authURL(self):
-        url = self.auth_url + '?api_key=' + self.keys['public']
+    def authURL(self, callback):
+        url = self.auth_url + '?api_key=' + self.keys['public'] + '&cb=' + callback
         return url
 
     def queryParams(self, method, params):
@@ -54,4 +54,4 @@ class LastFM:
         else:
             response = request('POST', self.endpoint, data=query)
 
-        return response.content
+        return response.json()
