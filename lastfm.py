@@ -1,14 +1,28 @@
-from requests import request
+from requests import Session, ConnectionError
+from requests.adapters import HTTPAdapter
 from hashlib import md5
 
+class LastFMError:
+    def __init__(self, message):
+        self.message = message
+
+    def __str__(self):
+        return 'Last.fm error: ' + self.message
+
+    def export(self):
+        return {'reason' : self.message}
 
 class LastFM:
     endpoint = 'http://ws.audioscrobbler.com/2.0/'
     auth_url = 'http://www.last.fm/api/auth/'
 
-    def __init__(self, public_key, secret_key, session=None):
+    def __init__(self, public_key, secret_key, session=None, max_retries=None):
         self.keys = {'public' : public_key, 'secret' : secret_key}
         self.session = session
+
+        self.request_session = Session()
+        if max_retries is not None:
+            self.request_session.mount(self.endpoint, HTTPAdapter(max_retries=max_retries))
 
     def authURL(self, callback):
         url = self.auth_url + '?api_key=' + self.keys['public'] + '&cb=' + callback
@@ -49,9 +63,14 @@ class LastFM:
         query = self.queryParams(method, params)
         query['api_sig'] = self.signature(query)
 
-        if not post:
-            response = request('GET', self.endpoint, params=query)
-        else:
-            response = request('POST', self.endpoint, data=query)
+        request = self.request_session.request
+
+        try:
+            if not post:
+                response = request('GET', self.endpoint, params=query)
+            else:
+                response = request('POST', self.endpoint, data=query)
+        except ConnectionError:
+            raise LastFMError("Last.fm service is unjoinable. Please try again later.")
 
         return response.json()
