@@ -1,12 +1,12 @@
-from flask import Blueprint, jsonify, redirect, url_for, request
-import config
+from flask import Blueprint, current_app, jsonify, redirect, url_for, request
 from lastfm import LastFM
-import json
 
 api = Blueprint('Last.fm API', __name__)
 
 def init_lastfm(session=None):
-    return LastFM(config.LASTFM_PUBLIC, config.LASTFM_PRIVATE)
+    public = current_app.config.get('LASTFM_PUBLIC')
+    private = current_app.config.get('LASTFM_PRIVATE')
+    return LastFM(public, private)
 
 @api.route('/auth')
 def auth_init():

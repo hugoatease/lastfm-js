@@ -2,7 +2,7 @@ from flask import Flask
 from lastapi import api
 
 app = Flask(__name__)
-app.debug = True
+app.config.from_pyfile('config.py')
 
 app.register_blueprint(api)
 
