@@ -1,5 +1,5 @@
 from flask import Flask
-from lastapi import api
+from lastfmapi import api
 
 app = Flask(__name__)
 app.config.from_pyfile('config.py')
